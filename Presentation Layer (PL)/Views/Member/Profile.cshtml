@@ -1,0 +1,97 @@
+@model DAL.Models.ViewModels.ProfileViewModel
+@{ ViewData["Title"] = "My Profile"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-user text-primary me-2"></i>My Profile</h1>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+        @if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+
+        <form method="post" asp-action="Profile" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Personal info</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label">Full name</label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label">Phone</label>
+                            <input asp-for="Phone" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ZoneId" class="form-label">Zone</label>
+                            <select asp-for="ZoneId" asp-items="ViewBag.Zones" class="form-select"><option value="">—</option></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="AvatarUrl" class="form-label">Avatar URL</label>
+                            <input asp-for="AvatarUrl" class="form-control" placeholder="/uploads/… or https://…" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Bio" class="form-label">Bio</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">KYC verification</h2></div>
+                <div class="card-body">
+                    <p class="text-muted small">Upload your national ID and a selfie to get verified. The librarian team reviews submissions.</p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">National ID number</label>
+                            <input type="text" name="kycNationalId" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">ID photo</label>
+                            <input type="file" name="kycIdPhoto" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Selfie</label>
+                            <input type="file" name="kycSelfie" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Notification preferences</h2></div>
+                <div class="card-body">
+                    <div class="form-check mb-2"><input asp-for="EmailNotificationsEnabled" class="form-check-input" /><label asp-for="EmailNotificationsEnabled" class="form-check-label">Email notifications</label></div>
+                    <div class="form-check mb-2"><input asp-for="SmsNotificationsEnabled" class="form-check-input" /><label asp-for="SmsNotificationsEnabled" class="form-check-label">SMS notifications</label></div>
+                    <div class="form-check"><input asp-for="PushNotificationsEnabled" class="form-check-input" /><label asp-for="PushNotificationsEnabled" class="form-check-label">Push notifications</label></div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save profile</button>
+        </form>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white"><h2 class="h6 mb-0">Change password</h2></div>
+            <div class="card-body">
+                <form method="post" asp-action="ChangePassword" style="max-width:420px;">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-2">
+                        <label class="form-label">Current password</label>
+                        <input type="password" name="CurrentPassword" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">New password</label>
+                        <input type="password" name="NewPassword" class="form-control" required minlength="8" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirm new password</label>
+                        <input type="password" name="ConfirmPassword" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-key"></i> Change password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

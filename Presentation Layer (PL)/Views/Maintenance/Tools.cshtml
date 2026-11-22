@@ -1,0 +1,61 @@
+@{ ViewData["Title"] = "Tool Health"; var tools = (List<DAL.Models.Entities.Tool>)ViewBag.Tools; var statuses = (string[])ViewBag.Statuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-heart-pulse text-primary me-2"></i>Tool Health Board</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="" selected="@(ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in statuses) { <option value="@s" selected="@(ViewBag.Status == s)">@s.Replace("PendingApproval", "Pending approval")</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (tools.Count == 0)
+        {
+            <div class="alert alert-info">No tools found.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Tool</th><th>Category</th><th>Owner</th><th>Battery</th><th>Usage</th><th>Last service</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            @foreach (var t in tools)
+                            {
+                                <tr>
+                                    <td><strong>@t.Name</strong></td>
+                                    <td>@t.Category?.Name</td>
+                                    <td>@t.OwnerUser?.FullName</td>
+                                    <td>
+                                        @if (t.BatteryHealthPercentage.HasValue)
+                                        {
+                                            <span class="badge @(t.BatteryHealthPercentage < 30 ? "text-bg-danger" : t.BatteryHealthPercentage < 60 ? "text-bg-warning text-dark" : "text-bg-success")">@t.BatteryHealthPercentage%</span>
+                                        }
+                                        else { <span class="text-muted">—</span> }
+                                    </td>
+                                    <td>@t.UsageHours h</td>
+                                    <td>@(t.LastServiceAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td><span class="badge @(t.Status == ToolStatusEnum.Available ? "text-bg-success" : t.Status == ToolStatusEnum.Maintenance ? "text-bg-warning text-dark" : t.Status == ToolStatusEnum.Unfit || t.Status == ToolStatusEnum.Locked ? "text-bg-danger" : "text-bg-secondary")">@t.Status.ToString().Replace("PendingApproval", "Pending approval")</span></td>
+                                    <td>
+                                        <a asp-action="RecordForm" asp-route-toolId="@t.ToolId" class="btn btn-sm btn-outline-primary">Service</a>
+                                        @if (t.Status == ToolStatusEnum.Available)
+                                        {
+                                            <form asp-action="SetStatus" asp-route-id="@t.ToolId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="status" value="Maintenance" /><button class="btn btn-sm btn-outline-warning">To maintenance</button></form>
+                                        }
+                                        else if (t.Status == ToolStatusEnum.Maintenance)
+                                        {
+                                            <form asp-action="SetStatus" asp-route-id="@t.ToolId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="status" value="Available" /><button class="btn btn-sm btn-outline-success">Mark ready</button></form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

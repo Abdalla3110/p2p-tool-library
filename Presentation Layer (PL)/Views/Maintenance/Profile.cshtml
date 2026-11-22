@@ -1,0 +1,46 @@
+@{ var user = (DAL.Models.Entities.User)ViewBag.User; var profile = (DAL.Models.Entities.TechnicianProfile?)ViewBag.Profile; ViewData["Title"] = "Technician Profile"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:64px;height:64px;font-size:1.4rem;">
+                        @string.Concat(user.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpper(w[0])))
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-1">@user.FullName</h1>
+                        <div class="text-muted small">Technician • @user.Zone?.Name • ★ @user.RatingAverage.ToString("0.0") (@user.ReviewCount reviews)</div>
+                        @if (profile?.Specializations != null) { <div class="text-muted small">@profile.Specializations</div> }
+                    </div>
+                </div>
+                @if (profile?.Bio != null) { <p class="mt-3 mb-0 text-muted">@profile.Bio</p> }
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-primary">@ViewBag.TotalRepairs</div><div class="text-muted small">Tools repaired</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-warning">@(((double)ViewBag.AvgHours).ToString("0.0"))h</div><div class="text-muted small">Avg repair time</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-info">@ViewBag.OpenRepairs</div><div class="text-muted small">Open repairs</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-success">@ViewBag.TotalToolsMaintained</div><div class="text-muted small">Tools maintained</div></div></div></div>
+        </div>
+
+        @if (profile != null)
+        {
+            <div class="card shadow-sm">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Stored metrics</h2></div>
+                <div class="card-body">
+                    <div class="row g-3 small">
+                        <div class="col-md-4"><span class="text-muted">Success rate:</span> <strong>@profile.SuccessRate%</strong></div>
+                        <div class="col-md-4"><span class="text-muted">Avg repair time:</span> <strong>@profile.AvgRepairTimeDays day(s)</strong></div>
+                        <div class="col-md-4"><span class="text-muted">Open tasks:</span> <strong>@profile.OpenTasksCount</strong></div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No technician profile on file yet — metrics above are computed live.</div>
+        }
+    </div>
+</div>

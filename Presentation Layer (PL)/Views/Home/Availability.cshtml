@@ -1,0 +1,49 @@
+@{ var tool = (DAL.Models.Entities.Tool)ViewBag.Tool; var year = (int)ViewBag.Year; var mon = (int)ViewBag.Month; var days = (System.Collections.Generic.IEnumerable<dynamic>)ViewBag.Days; var prev = (int)ViewBag.PrevMonth; var next = (int)ViewBag.NextMonth; ViewData["Title"] = $"Availability — {tool.Name}"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 900px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-0">@tool.Name — availability</h1>
+                <p class="text-muted mb-0">@tool.Category?.Name</p>
+            </div>
+            <a asp-action="Details" asp-route-id="@tool.ToolId" class="btn btn-outline-secondary">Back to tool</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <a asp-action="Availability" asp-route-id="@tool.ToolId" asp-route-month="@prev" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></a>
+                <h2 class="h5 mb-0">@(new DateTime(year, mon, 1)).ToString("MMMM yyyy")</h2>
+                <a asp-action="Availability" asp-route-id="@tool.ToolId" asp-route-month="@next" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="row g-1 text-center mb-2">
+                    @foreach (var w in new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" })
+                    {
+                        <div class="col"><strong class="text-muted small">@w</strong></div>
+                    }
+                </div>
+                @{ var firstDow = (int)new DateTime(year, mon, 1).DayOfWeek; }
+                <div class="row g-1">
+                    @for (var i = 0; i < firstDow; i++) { <div class="col"></div> }
+                    @foreach (var d in days)
+                    {
+                        var isBooked = d.Status == "Booked";
+                        var isBuffer = d.Status == "CleaningBuffer";
+                        var isPast = d.Day < DateOnly.FromDateTime(DateTime.Today);
+                        <div class="col">
+                            <div class="p-1 rounded border text-center small @(isBooked ? "bg-danger text-white" : isBuffer ? "bg-warning text-dark" : isPast ? "text-muted" : "bg-success-subtle")">
+                                @d.Day.Day
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex gap-3 mt-3 small">
+                    <span><span class="badge bg-success-subtle border">Available</span></span>
+                    <span><span class="badge bg-warning-subtle border">Cleaning buffer</span></span>
+                    <span><span class="badge bg-danger-subtle border">Booked</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

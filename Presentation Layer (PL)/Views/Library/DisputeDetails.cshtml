@@ -1,0 +1,74 @@
+@model DAL.Models.Entities.Dispute
+@{ ViewData["Title"] = $"Dispute #{Model.DisputeId}"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 900px;">
+        <a asp-action="Disputes" class="btn btn-link px-0 text-decoration-none mb-3"><i class="fas fa-arrow-left"></i> Back to disputes</a>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between">
+                <h1 class="h5 mb-0">Dispute #@Model.DisputeId — @Model.Type</h1>
+                <span class="badge text-bg-warning text-dark fs-6">@Model.Status</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Parties</h2>
+                        <div>Tool: <strong>@Model.Tool?.Name</strong></div>
+                        <div>Booking: <a asp-controller="Member" asp-action="Details" asp-route-id="@Model.BookingId">#@Model.BookingId</a></div>
+                        <div>Reported by: @Model.ReportedByUser?.FullName</div>
+                        <div>Against: @(Model.AgainstType == "Platform" ? "ToolShare Platform" : Model.AgainstUser?.FullName)</div>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Timeline</h2>
+                        <div>Opened: @Model.OpenedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                        <div>Deposit at risk: <strong>@(Model.DepositAtRisk?.ToString("0") ?? "—") EGP</strong></div>
+                        @if (Model.ResolvedAt.HasValue) { <div>Resolved: @Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</div> }
+                    </div>
+                </div>
+                <hr>
+                <h2 class="h6 text-muted">Description</h2>
+                <p>@Model.Description</p>
+                @if (!string.IsNullOrWhiteSpace(Model.ResolutionNotes))
+                {
+                    <div class="alert alert-light border"><strong>Resolution:</strong> @Model.Resolution — @Model.ResolutionNotes @(Model.RefundAmount.HasValue ? $"(refund {Model.RefundAmount:0} EGP)" : "")</div>
+                }
+            </div>
+        </div>
+
+        @if (Model.Status is DisputeStatusEnum.Open or DisputeStatusEnum.InReview or DisputeStatusEnum.Reopened)
+        {
+            <div class="card shadow-sm">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Issue decision</h2></div>
+                <div class="card-body">
+                    <form asp-action="ResolveDispute" asp-route-id="@Model.DisputeId" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Resolution</label>
+                                <select name="resolution" class="form-select" required>
+                                    <option value="">Choose…</option>
+                                    <option value="ReleaseDepositToLender">Release deposit to lender</option>
+                                    <option value="PartialRefundToBorrower">Partial refund to borrower</option>
+                                    <option value="FullRefundToBorrower">Full refund to borrower</option>
+                                    <option value="SplitDeposit">Split deposit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Refund amount (EGP)</label>
+                                <input type="number" name="refundAmount" step="0.01" min="0" class="form-control" />
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Notes</label>
+                                <textarea name="notes" class="form-control" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-check"></i> Resolve dispute</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>

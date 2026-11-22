@@ -1,0 +1,63 @@
+@{ var user = (DAL.Models.Entities.User)ViewBag.User; var tools = (List<DAL.Models.ViewModels.ToolCardViewModel>)ViewBag.Tools; ViewData["Title"] = user.FullName; }
+
+<div class="py-5">
+    <div class="container">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:64px;height:64px;font-size:1.4rem;">
+                        @string.Concat(user.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpper(w[0])))
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-1">@user.FullName</h1>
+                        <div class="text-muted small">
+                            <i class="fas fa-crown text-warning"></i> @user.Tier
+                            @if (user.Zone != null) { <text> • @user.Zone.Name</text> }
+                            @if (user.IsVerified) { <text> • <span class="badge text-bg-success">Verified</span></text> }
+                        </div>
+                        <div class="mt-1">
+                            <span class="text-warning">★</span> @user.RatingAverage.ToString("0.0") (@user.ReviewCount reviews)
+                            <span class="text-muted ms-2">Trust @user.TrustScore/100</span>
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(user.Bio))
+                {
+                    <p class="mt-3 mb-0 text-muted">@user.Bio</p>
+                }
+            </div>
+        </div>
+
+        <h2 class="h5 mb-3">Tools for rent (@tools.Count)</h2>
+        @if (tools.Count == 0)
+        {
+            <div class="alert alert-info">This member has no active tools listed.</div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var tool in tools)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="card h-100 tool-card shadow-sm">
+                            <div class="bg-light text-center py-4 rounded-top">
+                                <i class="@tool.CategoryIcon fa-3x text-primary"></i>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <h3 class="h5 mb-0">@tool.Name</h3>
+                                    <span class="badge text-bg-success">@tool.Status</span>
+                                </div>
+                                <div class="text-muted small mb-2"><i class="fas fa-map-marker-alt text-primary me-1"></i> @tool.ZoneName</div>
+                                <div class="fw-bold text-primary fs-5">@tool.PricePerDay.ToString("0") EGP/day</div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a asp-controller="Home" asp-action="Details" asp-route-id="@tool.ToolId" class="btn btn-primary w-100"><i class="fas fa-calendar-check"></i> View &amp; Book</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

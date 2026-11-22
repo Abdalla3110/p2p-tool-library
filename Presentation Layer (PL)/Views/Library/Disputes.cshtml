@@ -1,0 +1,48 @@
+@{ ViewData["Title"] = "Disputes"; var statuses = (string[])ViewBag.Statuses; var disputes = (List<DAL.Models.Entities.Dispute>)ViewBag.Disputes; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-gavel text-primary me-2"></i>Dispute Mediation</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="All" selected="@(ViewBag.Status == "All" || ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in statuses)
+                {
+                    <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (disputes.Count == 0)
+        {
+            <div class="alert alert-info">No disputes found.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Type</th><th>Reported by</th><th>Against</th><th>Deposit at risk</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var d in disputes)
+                            {
+                                <tr>
+                                    <td>@d.DisputeId</td>
+                                    <td>@d.Tool?.Name</td>
+                                    <td><span class="badge text-bg-light border">@d.Type</span></td>
+                                    <td>@d.ReportedByUser?.FullName</td>
+                                    <td>@(d.AgainstType == "Platform" ? "Platform" : d.AgainstUser?.FullName ?? "—")</td>
+                                    <td>@(d.DepositAtRisk?.ToString("0") ?? "—") EGP</td>
+                                    <td><span class="badge @(d.Status is DisputeStatusEnum.Open or DisputeStatusEnum.Reopened ? "text-bg-danger" : d.Status == DisputeStatusEnum.InReview ? "text-bg-warning text-dark" : d.Status == DisputeStatusEnum.Resolved ? "text-bg-success" : "text-bg-secondary")">@d.Status</span></td>
+                                    <td><a asp-action="DisputeDetails" asp-route-id="@d.DisputeId" class="btn btn-sm btn-outline-primary">Review</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

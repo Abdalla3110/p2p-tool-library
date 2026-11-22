@@ -1,0 +1,48 @@
+@{ ViewData["Title"] = "My Ratings"; var received = (List<DAL.Models.Entities.Rating>)ViewBag.Received; var given = (List<DAL.Models.Entities.Rating>)ViewBag.Given; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 900px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-star text-primary me-2"></i>Ratings</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white"><h2 class="h6 mb-0">Received</h2></div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var r in received)
+                        {
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@r.RaterUser?.FullName</strong>
+                                    <span class="text-warning">@(string.Concat(Enumerable.Repeat("★", r.Rating1)) + string.Concat(Enumerable.Repeat("☆", 5 - r.Rating1)))</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(r.Comment)) { <div class="text-muted small">@r.Comment</div> }
+                                <div class="text-muted" style="font-size:.75rem;">booking #@r.BookingId • @r.CreatedAt.ToString("yyyy-MM-dd")</div>
+                            </li>
+                        }
+                        @if (received.Count == 0) { <li class="list-group-item text-muted">No ratings yet.</li> }
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white"><h2 class="h6 mb-0">Given</h2></div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var r in given)
+                        {
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@r.RatedUser?.FullName</strong>
+                                    <span class="text-warning">@(string.Concat(Enumerable.Repeat("★", r.Rating1)) + string.Concat(Enumerable.Repeat("☆", 5 - r.Rating1)))</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(r.Comment)) { <div class="text-muted small">@r.Comment</div> }
+                                <div class="text-muted" style="font-size:.75rem;">booking #@r.BookingId • @r.CreatedAt.ToString("yyyy-MM-dd")</div>
+                            </li>
+                        }
+                        @if (given.Count == 0) { <li class="list-group-item text-muted">You haven't rated anyone yet.</li> }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

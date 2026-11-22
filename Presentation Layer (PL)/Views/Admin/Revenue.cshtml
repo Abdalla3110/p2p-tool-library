@@ -1,0 +1,62 @@
+@{ ViewData["Title"] = "Revenue Reports"; var reports = (List<DAL.Models.Entities.RevenueReport>)ViewBag.Reports; var months = (List<(string Label, decimal Gmv, decimal Fees, int Bookings)>)ViewBag.Monthly; }
+
+<div class="py-5">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 fw-bold mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Revenue Reports</h1>
+            <form asp-action="GenerateRevenueReport" method="post">@Html.AntiForgeryToken()<button class="btn btn-primary"><i class="fas fa-plus"></i> Generate current month</button></form>
+        </div>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white"><h2 class="h6 mb-0">Computed monthly (last 6 months)</h2></div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead><tr><th>Month</th><th>Bookings</th><th>GMV</th><th>Platform fees</th></tr></thead>
+                            <tbody>
+                                @foreach (var m in months)
+                                {
+                                    <tr>
+                                        <td>@m.Label</td>
+                                        <td>@m.Bookings</td>
+                                        <td>@(m.Gmv + m.Fees).ToString("0") EGP</td>
+                                        <td class="text-success fw-semibold">@m.Fees.ToString("0") EGP</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white"><h2 class="h6 mb-0">Stored reports</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead><tr><th>Period</th><th>Source</th><th>Transactions</th><th>Amount</th><th>Created</th></tr></thead>
+                            <tbody>
+                                @foreach (var r in reports)
+                                {
+                                    <tr>
+                                        <td>@r.PeriodMonth.ToString("MMMM yyyy")</td>
+                                        <td><span class="badge text-bg-light border">@r.Source</span></td>
+                                        <td>@r.TransactionCount</td>
+                                        <td>@r.Amount.ToString("0.00") EGP</td>
+                                        <td>@r.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    </tr>
+                                }
+                                @if (reports.Count == 0)
+                                {
+                                    <tr><td colspan="5" class="text-muted text-center py-4">No stored reports — generate one.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

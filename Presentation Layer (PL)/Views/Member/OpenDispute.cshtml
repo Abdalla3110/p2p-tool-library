@@ -1,0 +1,43 @@
+@model DAL.Models.ViewModels.DisputeFormViewModel
+@{ var booking = (DAL.Models.Entities.Booking)ViewBag.Booking; var types = (string[])ViewBag.Types; ViewData["Title"] = "Open Dispute"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 720px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-gavel text-primary me-2"></i>Open a Dispute</h1>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <strong>Booking #@booking.BookingId</strong> — @booking.Tool?.Name<br>
+                <span class="text-muted small">@booking.PickupDate.ToString("yyyy-MM-dd") → @booking.ReturnDate.ToString("yyyy-MM-dd") • Deposit @booking.DepositAmount.ToString("0") EGP</span>
+            </div>
+        </div>
+
+        <div class="alert alert-warning"><i class="fas fa-info-circle me-2"></i>A librarian will review your dispute. Provide clear details and evidence.</div>
+
+        <form method="post" asp-action="Create">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="BookingId" />
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Dispute type</label>
+                            <select asp-for="Type" class="form-select">
+                                @foreach (var t in types) { <option value="@t">@t</option> }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">What happened?</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" required placeholder="Describe the issue in detail…"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-danger"><i class="fas fa-gavel"></i> Open Dispute</button>
+                <a asp-controller="Member" asp-action="Details" asp-route-id="@booking.BookingId" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

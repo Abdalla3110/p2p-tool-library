@@ -1,0 +1,119 @@
+@model DAL.Models.ViewModels.ToolFormViewModel
+@{ ViewData["Title"] = Model.ToolId == 0 ? "Add Tool" : "Edit Tool"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-toolbox text-primary me-2"></i>@ViewData["Title"]</h1>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <form method="post" asp-action="ToolSave" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ToolId" />
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Basic info</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Name" class="form-label">Tool name</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Brand" class="form-label">Brand</label>
+                            <input asp-for="Brand" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="CategoryId" class="form-label">Category</label>
+                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select"></select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ZoneId" class="form-label">Zone</label>
+                            <select asp-for="ZoneId" asp-items="ViewBag.Zones" class="form-select"></select>
+                            <span asp-validation-for="ZoneId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Condition" class="form-label">Condition</label>
+                            <select asp-for="Condition" asp-items="ViewBag.Conditions" class="form-select"></select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input asp-for="IsHighValue" class="form-check-input" />
+                                <label asp-for="IsHighValue" class="form-check-label">High-value tool (requires extra verification)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Photos</h2></div>
+                <div class="card-body">
+                    <label class="form-label">Upload photos (jpg/png/webp, max 8)</label>
+                    <input type="file" name="Photos" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif" multiple />
+                    <div class="form-text">The first photo becomes the primary image shown in listings.</div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Pricing &amp; rules</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label asp-for="PricePerHour" class="form-label">Price / hour (EGP)</label>
+                            <input asp-for="PricePerHour" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PricePerDay" class="form-label">Price / day (EGP)</label>
+                            <input asp-for="PricePerDay" type="number" step="0.01" class="form-control" />
+                            <span asp-validation-for="PricePerDay" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PricePerWeek" class="form-label">Price / week (EGP)</label>
+                            <input asp-for="PricePerWeek" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="DepositAmount" class="form-label">Deposit (EGP)</label>
+                            <input asp-for="DepositAmount" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="InsurancePercentage" class="form-label">Insurance %</label>
+                            <input asp-for="InsurancePercentage" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="MaxBorrowDays" class="form-label">Max borrow (days)</label>
+                            <input asp-for="MaxBorrowDays" type="number" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="CleaningBufferHours" class="form-label">Cleaning buffer (hrs)</label>
+                            <input asp-for="CleaningBufferHours" type="number" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="BatteryHealthPercentage" class="form-label">Battery health %</label>
+                            <input asp-for="BatteryHealthPercentage" type="number" min="0" max="100" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="WarrantyExpiryDate" class="form-label">Warranty expiry</label>
+                            <input asp-for="WarrantyExpiryDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Tool</button>
+                <a asp-action="Tools" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+            @if (Model.ToolId == 0)
+            {
+                <p class="text-muted small mt-2">New tools are submitted for librarian approval before appearing in search.</p>
+            }
+        </form>
+    </div>
+</div>

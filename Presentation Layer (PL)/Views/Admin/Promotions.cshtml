@@ -1,0 +1,45 @@
+@model List<DAL.Models.Entities.Promotion>
+@{ ViewData["Title"] = "Promotions"; }
+
+<div class="py-5">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 fw-bold mb-0"><i class="fas fa-tag text-primary me-2"></i>Promotions</h1>
+            <a asp-action="PromotionForm" class="btn btn-primary"><i class="fas fa-plus"></i> New promo</a>
+        </div>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Code</th><th>Discount</th><th>Category</th><th>Period</th><th>Uses</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            <tr>
+                                <td><strong class="text-uppercase">@p.Code</strong><div class="text-muted small">@p.Description</div></td>
+                                <td>@(p.DiscountType == DiscountTypeEnum.Percentage ? $"{p.DiscountPercentage}%" : $"{p.DiscountAmount:0} EGP")</td>
+                                <td>@(p.Category?.Name ?? "All")</td>
+                                <td class="small">@p.StartDate.ToString("yyyy-MM-dd") → @(p.EndDate?.ToString("yyyy-MM-dd") ?? "∞")</td>
+                                <td>@p.UsedCount @(p.MaxUses.HasValue ? $"/ {p.MaxUses}" : "")</td>
+                                <td><span class="badge @(p.Status == PromotionStatusEnum.Active ? "text-bg-success" : p.Status == PromotionStatusEnum.Scheduled ? "text-bg-info" : "text-bg-secondary")">@p.Status</span></td>
+                                <td>
+                                    <a asp-action="PromotionForm" asp-route-id="@p.PromotionId" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form asp-action="TogglePromotion" asp-route-id="@p.PromotionId" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm @(p.Status == PromotionStatusEnum.Active ? "btn-outline-danger" : "btn-outline-success")">@(p.Status == PromotionStatusEnum.Active ? "Disable" : "Enable")</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        @if (Model.Count == 0)
+                        {
+                            <tr><td colspan="7" class="text-muted text-center py-4">No promotions yet.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

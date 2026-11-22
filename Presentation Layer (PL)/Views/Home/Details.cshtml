@@ -1,0 +1,277 @@
+@model DAL.Models.ViewModels.ToolDetailsViewModel
+@{ ViewData["Title"] = Model.Card.Name; }
+
+@functions {
+    string Stars(decimal rating)
+    {
+        var full = (int)Math.Round(rating);
+        return string.Concat(Enumerable.Repeat("★", Math.Clamp(full, 0, 5))) +
+               string.Concat(Enumerable.Repeat("☆", 5 - Math.Clamp(full, 0, 5)));
+    }
+    string Initials(string name) =>
+        string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpper(w[0])));
+    string StatusBadge(string status, bool highValue)
+    {
+        if (highValue) return "text-bg-warning text-dark";
+        return status switch
+        {
+            "Available" => "text-bg-success",
+            "Rented" => "text-bg-info",
+            "Maintenance" => "text-bg-warning text-dark",
+            "Locked" or "Unfit" => "text-bg-danger",
+            _ => "text-bg-secondary",
+        };
+    }
+}
+
+<div class="py-5">
+    <div class="container">
+        <div class="mb-4">
+            <a asp-controller="Home" asp-action="Tools" class="btn btn-link px-0 text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Back to Tools</a>
+        </div>
+
+        @if (TempData["Error"] is string err)
+        {
+            <div class="alert alert-danger">@err</div>
+        }
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm overflow-hidden">
+                    @if (Model.Photos.Count > 0)
+                    {
+                        <div id="toolPhotos" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                @for (var i = 0; i < Model.Photos.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@Model.Photos[i].Url" class="d-block w-100" style="max-height:420px;object-fit:cover;" alt="Tool photo" />
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.Photos.Count > 1)
+                            {
+                                <button class="carousel-control-prev" type="button" data-bs-target="#toolPhotos" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#toolPhotos" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bg-light text-center py-5">
+                            <i class="@Model.Card.CategoryIcon fa-6x text-primary"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (Model.Card.RatingAverage >= 4.5m)
+                            {
+                                <span class="badge text-bg-warning"><i class="fas fa-star"></i> Top Rated</span>
+                            }
+                            <span class="badge @StatusBadge(Model.Card.Status, Model.Card.IsHighValue)">@Model.Card.Status.Replace("PendingApproval", "Pending Approval")</span>
+                            <span class="badge text-bg-info">@Model.Card.CategoryName</span>
+                            @if (Model.Condition != "Good")
+                            {
+                                <span class="badge text-bg-light border">@Model.Condition</span>
+                            }
+                        </div>
+
+                        <ul class="nav nav-tabs mt-4" id="toolTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" type="button">Overview</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#specs" type="button">Specifications</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents" type="button">Documents</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#maintenance" type="button">Maintenance</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content pt-3">
+                            <div class="tab-pane fade show active" id="overview">
+                                <h2 class="h4">@Model.Card.Name</h2>
+                                <p class="text-muted"><i class="fas fa-map-marker-alt text-primary me-1"></i> @Model.Card.ZoneName • by @Model.Card.OwnerName</p>
+                                <p>@Model.Card.Description</p>
+                                @if (Model.SafetyCertificateExpiry.HasValue || Model.LastServiceAt.HasValue)
+                                {
+                                    <div class="alert alert-success d-flex align-items-center gap-2">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <div>
+                                            Safety certificate @(Model.SafetyCertificateExpiry.HasValue ? $"valid until {Model.SafetyCertificateExpiry:yyyy-MM-dd}" : "on file")
+                                            @(Model.LastServiceAt.HasValue ? $". Last maintenance: {Model.LastServiceAt:yyyy-MM-dd}." : ".")
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="specs">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between"><span>Brand</span><strong>@(Model.Card.Brand ?? "—")</strong></li>
+                                    <li class="list-group-item d-flex justify-content-between"><span>Condition</span><strong>@Model.Condition</strong></li>
+                                    <li class="list-group-item d-flex justify-content-between"><span>Battery Health</span><strong>@(Model.BatteryHealthPercentage?.ToString() + "%" ?? "—")</strong></li>
+                                    <li class="list-group-item d-flex justify-content-between"><span>Warranty Expiry</span><strong>@(Model.WarrantyExpiryDate?.ToString("yyyy-MM-dd") ?? "—")</strong></li>
+                                    <li class="list-group-item d-flex justify-content-between"><span>Total Rentals</span><strong>@Model.TotalRentals</strong></li>
+                                    <li class="list-group-item d-flex justify-content-between"><span>Usage Hours</span><strong>@Model.UsageHours</strong></li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane fade" id="documents">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                            <div class="fw-semibold">User Manual</div>
+                                            <div class="text-muted small">@(Model.UserManualUrl != null ? "Available" : "Not attached")</div>
+                                            @if (Model.UserManualUrl != null)
+                                            {
+                                                <a href="@Model.UserManualUrl" class="btn btn-sm btn-outline-primary mt-2" target="_blank">Download</a>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <i class="fas fa-video fa-2x text-primary mb-2"></i>
+                                            <div class="fw-semibold">Safety Video</div>
+                                            <div class="text-muted small">@(Model.SafetyVideoUrl != null ? "Available" : "Not attached")</div>
+                                            @if (Model.SafetyVideoUrl != null)
+                                            {
+                                                <a href="@Model.SafetyVideoUrl" class="btn btn-sm btn-outline-primary mt-2" target="_blank">Watch</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="maintenance">
+                                @if (Model.RecentMaintenance.Count == 0)
+                                {
+                                    <p class="text-muted">No maintenance records yet.</p>
+                                }
+                                else
+                                {
+                                    <div class="timeline">
+                                        @foreach (var m in Model.RecentMaintenance)
+                                        {
+                                            <div class="d-flex gap-3 mb-3">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:36px;height:36px;flex:0 0 36px;"><i class="fas fa-check"></i></div>
+                                                <div><strong>@m.Type @(m.Description != null ? "— " + m.Description : "")</strong><div class="text-muted small">@m.CreatedAt.ToString("yyyy-MM-dd") • @m.Status</div></div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h1 class="h3 mb-1">@Model.Card.Name</h1>
+                                <div class="text-muted"><span class="text-warning">@Html.Raw(Stars(Model.Card.RatingAverage))</span> @Model.Card.RatingAverage.ToString("0.0") (@Model.Card.ReviewCount reviews)</div>
+                            </div>
+                            <span class="badge @StatusBadge(Model.Card.Status, Model.Card.IsHighValue) fs-6">@Model.Card.Status.Replace("PendingApproval", "Pending Approval")</span>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="border rounded p-2 text-center h-100">
+                                    <div class="fw-bold">Hourly</div>
+                                    <div>@Model.Card.PricePerHour.ToString("0") EGP</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2 text-center h-100 bg-light">
+                                    <div class="fw-bold">Daily</div>
+                                    <div class="text-primary fw-bold">@Model.Card.PricePerDay.ToString("0") EGP</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2 text-center h-100">
+                                    <div class="fw-bold">Weekly</div>
+                                    <div>@(Model.Card.PricePerWeek?.ToString("0") ?? "—") EGP</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="list-group mb-3">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-shield-alt text-primary me-2"></i>Deposit</span>
+                                <strong>@Model.Card.DepositAmount.ToString("0") EGP</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-file-invoice text-primary me-2"></i>Insurance</span>
+                                <strong>@Model.InsurancePercentage.ToString("0.#")% of rental</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-calendar-alt text-primary me-2"></i>Max borrow</span>
+                                <strong>@Model.MaxBorrowDays days</strong>
+                            </div>
+                        </div>
+
+                        @if (Model.IsOwner)
+                        {
+                            <div class="alert alert-info mb-0"><i class="fas fa-user me-2"></i>This is your tool. Manage it from your dashboard.</div>
+                        }
+                        else if (User.Identity?.IsAuthenticated == true && Model.Card.Status == "Available")
+                        {
+                            <form asp-controller="Member" asp-action="BookTool" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="toolId" value="@Model.Card.ToolId" />
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <label class="form-label">Pickup Date</label>
+                                        <input type="date" name="pickupDate" class="form-control" required min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Return Date</label>
+                                        <input type="date" name="returnDate" class="form-control" required min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mt-3">
+                                    <i class="fas fa-calendar-check"></i> Request Booking
+                                </button>
+                            </form>
+                        }
+                        else if (Model.Card.Status == "Available")
+                        {
+                            <a asp-controller="Home" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt"></i> Login to Book
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-primary w-100" disabled><i class="fas fa-clock"></i> Currently @Model.Card.Status</button>
+                        }
+                        <a asp-action="Availability" asp-route-id="@Model.Card.ToolId" class="btn btn-outline-secondary w-100 mt-2">
+                            <i class="fas fa-calendar-days"></i> View availability calendar
+                        </a>
+                        @if (User.Identity?.IsAuthenticated == true && !Model.IsOwner)
+                        {
+                            <a asp-controller="Member" asp-action="StartConversation" asp-route-toolId="@Model.Card.ToolId" class="btn btn-outline-secondary w-100 mt-2">
+                                <i class="fas fa-comment-dots"></i> Ask the owner
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5">Owner</h2>
+                        <a asp-controller="Home" asp-action="PublicProfile" asp-route-id="@Model.OwnerUserId" class="d-flex align-items-center gap-3 text-decoration-none text-dark">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:48px;height:48px;">@Initials(Model.Card.OwnerName)</div>
+                            <div>
+                                <div class="fw-semibold">@Model.Card.OwnerName</div>
+                                <div class="text-muted small"><i class="fas fa-crown text-warning"></i> @Model.OwnerTier • Trust @Model.OwnerTrustScore</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="P2PToolLibrary.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Core.Tests/Core.Tests.csproj" />
+  </Folder>
+</Solution>

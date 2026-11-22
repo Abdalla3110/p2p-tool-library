@@ -1,0 +1,53 @@
+@model DAL.Models.ViewModels.MaintenanceRecordFormViewModel
+@{ ViewData["Title"] = "New Maintenance Record"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 720px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-screwdriver-wrench text-primary me-2"></i>@ViewData["Title"]</h1>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <form method="post" asp-action="RecordSave">
+            @Html.AntiForgeryToken()
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ToolId" class="form-label">Tool</label>
+                            <select asp-for="ToolId" asp-items="ViewBag.Tools" class="form-select"></select>
+                            <span asp-validation-for="ToolId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Type" class="form-label">Type</label>
+                            <select asp-for="Type" asp-items="ViewBag.Types" class="form-select"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label">Status</label>
+                            <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-select"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DurationHours" class="form-label">Duration (hours)</label>
+                            <input asp-for="DurationHours" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ScheduledAt" class="form-label">Scheduled at</label>
+                            <input asp-for="ScheduledAt" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label">Notes</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save record</button>
+                <a asp-action="Records" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

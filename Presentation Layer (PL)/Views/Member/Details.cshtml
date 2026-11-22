@@ -1,0 +1,181 @@
+@model DAL.Models.ViewModels.BookingDetailsViewModel
+@{ ViewData["Title"] = $"Booking #{Model.Booking.BookingId}"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0"><i class="fas fa-calendar-check text-primary me-2"></i>Booking #@Model.Booking.BookingId</h1>
+            <span class="badge fs-6 @(Model.Booking.Status == BookingStatusEnum.Completed ? "text-bg-success" : Model.Booking.Status == BookingStatusEnum.Cancelled ? "text-bg-danger" : "text-bg-warning text-dark")">@Model.Booking.Status</span>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Tool</h2>
+                        <div class="fw-semibold">@Model.Tool.Name</div>
+                        <div class="text-muted small">@Model.Tool.Category?.Name • @Model.Tool.Zone?.Name</div>
+                        <a asp-controller="Home" asp-action="Details" asp-route-id="@Model.Tool.ToolId" class="btn btn-sm btn-outline-primary mt-2">View tool</a>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Dates</h2>
+                        <div>@Model.Booking.PickupDate.ToString("yyyy-MM-dd") → @Model.Booking.ReturnDate.ToString("yyyy-MM-dd")</div>
+                        <div class="text-muted small">@(Model.Booking.ReturnDate.DayNumber - Model.Booking.PickupDate.DayNumber) day(s)</div>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Borrower</h2>
+                        <div>@Model.Borrower.FullName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Lender</h2>
+                        <div>@Model.Lender.FullName</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white"><h2 class="h6 mb-0">Payment breakdown</h2></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between"><span>Rental</span><strong>@Model.Booking.RentalAmount.ToString("0.00") EGP</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Insurance (@(Model.Tool.InsurancePercentage.ToString("0.#"))%)</span><strong>@Model.Booking.InsuranceAmount.ToString("0.00") EGP</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Platform fee</span><strong>@Model.Booking.PlatformFee.ToString("0.00") EGP</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Deposit (escrow)</span><strong>@Model.Booking.DepositAmount.ToString("0.00") EGP — @Model.Booking.DepositStatus</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span class="fw-bold">Total</span><strong class="text-primary">@Model.Booking.TotalAmount.ToString("0.00") EGP</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Due now</span><strong>@Model.Booking.FinalAmountDue.ToString("0.00") EGP</strong></li>
+            </ul>
+        </div>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+        @if (TempData["Error"] is string err2) { <div class="alert alert-danger">@err2</div> }
+
+        @if (Model.Handovers.Count > 0 && Model.Booking.Status is BookingStatusEnum.Confirmed or BookingStatusEnum.WaitingHandover or BookingStatusEnum.Active or BookingStatusEnum.Completed)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="fas fa-qrcode text-primary me-2"></i>Handover codes</h2></div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Show these codes to the library staff member at pickup and return to verify the handover.</p>
+                    <div class="row g-3">
+                        @foreach (var h in Model.Handovers)
+                        {
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-semibold"><i class="fas @(h.Type == HandoverTypeEnum.Pickup ? "fa-sign-in-alt" : "fa-sign-out-alt") me-1"></i>@h.Type</span>
+                                        <span class="badge @(h.Status == HandoverStatusEnum.Verified ? "text-bg-success" : h.Status == HandoverStatusEnum.FailedScan ? "text-bg-danger" : "text-bg-secondary")">@h.Status</span>
+                                    </div>
+                                    <div class="text-muted small mb-2">@h.ScheduledAt.ToString("yyyy-MM-dd HH:mm") • @h.Location</div>
+                                    <code class="d-block p-2 bg-light rounded text-center fw-bold" style="font-size:1.05rem; letter-spacing:1px;">@h.QrCode</code>
+                                    @if (h.VerifiedAt.HasValue)
+                                    {
+                                        <div class="text-success small mt-2"><i class="fas fa-check-circle me-1"></i>Verified @h.VerifiedAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.Booking.Status == BookingStatusEnum.Pending && Model.Booking.BorrowerUserId == int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value))
+        {
+            <a asp-action="Checkout" asp-route-id="@Model.Booking.BookingId" class="btn btn-success"><i class="fas fa-credit-card"></i> Pay @Model.Booking.FinalAmountDue.ToString("0.00") EGP</a>
+        }
+
+        @if (Model.CanCancel)
+        {
+            <form asp-action="Cancel" asp-route-id="@Model.Booking.BookingId" method="post" onsubmit="return confirm('Cancel this booking?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger"><i class="fas fa-times"></i> Cancel Booking</button>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Payment and handover steps will appear here once the booking is confirmed.</div>
+        }
+
+        @if (Model.Booking.Status is BookingStatusEnum.Active or BookingStatusEnum.Completed or BookingStatusEnum.Confirmed)
+        {
+            var isParty = Model.Booking.BorrowerUserId == int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value)
+                       || Model.Booking.LenderUserId == int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+            if (isParty)
+            {
+                <div class="d-flex gap-2 mt-3">
+                    <a asp-controller="Disputes" asp-action="Create" asp-route-bookingId="@Model.Booking.BookingId" class="btn btn-outline-danger"><i class="fas fa-gavel"></i> Open dispute</a>
+                    <a asp-controller="Claims" asp-action="Create" asp-route-bookingId="@Model.Booking.BookingId" class="btn btn-outline-warning"><i class="fas fa-file-invoice"></i> File claim</a>
+                </div>
+            }
+        }
+
+        @if (Model.Booking.Status is BookingStatusEnum.Pending or BookingStatusEnum.Confirmed or BookingStatusEnum.WaitingHandover or BookingStatusEnum.Active && Model.Booking.BorrowerUserId == int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value))
+        {
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="fas fa-calendar-day text-primary me-1"></i>Reschedule</h2></div>
+                <div class="card-body">
+                    <form asp-action="Reschedule" asp-route-id="@Model.Booking.BookingId" method="post" class="d-flex gap-2 align-items-end">
+                        @Html.AntiForgeryToken()
+                        <div><label class="form-label small mb-1">New pickup</label><input type="date" name="pickupDate" class="form-control" value="@Model.Booking.PickupDate.ToString("yyyy-MM-dd")" required /></div>
+                        <div><label class="form-label small mb-1">New return</label><input type="date" name="returnDate" class="form-control" value="@Model.Booking.ReturnDate.ToString("yyyy-MM-dd")" required /></div>
+                        <button class="btn btn-outline-primary">Reschedule</button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.Booking.Status == BookingStatusEnum.Active || Model.Booking.Status == BookingStatusEnum.Completed)
+        {
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="fas fa-exclamation-triangle text-warning me-1"></i>Report a problem</h2></div>
+                <div class="card-body">
+                    <form asp-action="ReportDamage" asp-route-id="@Model.Booking.BookingId" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="description" class="form-control" placeholder="Describe the damage or issue…" />
+                        <input type="file" name="photo" class="form-control" style="max-width:200px;" accept=".jpg,.jpeg,.png,.webp" />
+                        <button class="btn btn-outline-danger text-nowrap"><i class="fas fa-flag"></i> Report</button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.Booking.Status == BookingStatusEnum.Completed)
+        {
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="fas fa-toolbox text-primary me-1"></i>Rate the tool</h2></div>
+                <div class="card-body">
+                    <form asp-action="RateTool" asp-route-id="@Model.Booking.BookingId" method="post" class="d-flex gap-2 align-items-center">
+                        @Html.AntiForgeryToken()
+                        <select name="rating" class="form-select" style="max-width:120px;">
+                            <option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option><option value="2">★★</option><option value="1">★</option>
+                        </select>
+                        <input type="text" name="comment" class="form-control" placeholder="Comment (optional)" />
+                        <button class="btn btn-outline-primary text-nowrap">Rate tool</button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.Booking.Status == BookingStatusEnum.Completed && !Model.HasRated)
+        {
+            var counterparty = Model.Booking.BorrowerUserId == int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value) ? Model.Lender.FullName : Model.Borrower.FullName;
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="fas fa-star text-warning me-1"></i>Rate your experience</h2></div>
+                <div class="card-body">
+                    <p class="text-muted small">How was @counterparty?</p>
+                    <form asp-action="Rate" asp-route-id="@Model.Booking.BookingId" method="post" class="d-flex gap-2 align-items-center">
+                        @Html.AntiForgeryToken()
+                        <select name="rating" class="form-select" style="max-width:120px;">
+                            <option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option><option value="2">★★</option><option value="1">★</option>
+                        </select>
+                        <input type="text" name="comment" class="form-control" placeholder="Comment (optional)" />
+                        <button class="btn btn-primary text-nowrap">Submit</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (Model.Booking.Status == BookingStatusEnum.Completed && Model.HasRated)
+        {
+            <div class="alert alert-success mt-4"><i class="fas fa-check-circle me-2"></i>You've already rated this booking.</div>
+        }
+    </div>
+</div>

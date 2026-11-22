@@ -1,0 +1,79 @@
+@model DAL.Models.ViewModels.RegisterViewModel
+@{ ViewData["Title"] = "Register"; Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — ToolShare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #0d6efd22, #6610f322); min-height: 100vh; padding: 2rem 0; }
+        .auth-card { max-width: 520px; margin: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card shadow auth-card">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <a href="/" class="text-decoration-none"><i class="fas fa-tools fa-2x text-primary"></i><span class="h4 fw-bold text-dark ms-2">ToolShare</span></a>
+                    <h5 class="mt-3 text-muted">Create your account</h5>
+                </div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+                <form method="post" asp-action="Register">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label">Full Name</label>
+                        <input asp-for="FullName" class="form-control" required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label">Phone</label>
+                            <input asp-for="Phone" class="form-control" type="tel" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" type="email" required />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ReferralCode" class="form-label">Referral Code <small class="text-muted">(Optional)</small></label>
+                        <input asp-for="ReferralCode" class="form-control" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <input asp-for="Password" class="form-control" type="password" required />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                            <input asp-for="ConfirmPassword" class="form-control" type="password" required />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="AgreeToTerms" class="form-check-input" type="checkbox" />
+                        <label asp-for="AgreeToTerms" class="form-check-label">I agree to the Terms of Service and Safety Guidelines</label>
+                        <span asp-validation-for="AgreeToTerms" class="text-danger small d-block"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-user-plus"></i> Create Account</button>
+                </form>
+                <hr>
+                <div class="text-center">
+                    <span class="text-muted small">Already have an account?</span>
+                    <a href="/Home/Login" class="small">Log in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

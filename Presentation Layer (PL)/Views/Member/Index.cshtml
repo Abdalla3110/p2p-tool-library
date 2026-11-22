@@ -1,0 +1,69 @@
+@{ var user = (DAL.Models.Entities.User)ViewBag.User; ViewData["Title"] = "My Dashboard"; }
+
+<div class="py-5">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Welcome back, @user.FullName</h1>
+                <p class="text-muted mb-0">@user.Tier • Trust @user.TrustScore • Wallet: <strong>@user.WalletBalance.ToString("0.00") EGP</strong></p>
+            </div>
+            <a asp-action="ToolCreate" class="btn btn-primary"><i class="fas fa-plus"></i> Add Tool</a>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">My Tools</div><div class="display-6 fw-bold text-primary">@ViewBag.MyToolsCount</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Borrowing</div><div class="display-6 fw-bold text-warning">@ViewBag.ActiveLoans</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Lending</div><div class="display-6 fw-bold text-info">@ViewBag.ActiveLends</div></div></div></div>
+            <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Wallet</div><div class="display-6 fw-bold text-success">@(((DAL.Models.Entities.User)ViewBag.User).WalletBalance.ToString("0"))</div></div></div></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h2 class="h6 mb-0">Upcoming pickups</h2>
+                        <a asp-action="Bookings" class="btn btn-sm btn-outline-primary">All bookings</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var b in (List<DAL.Models.Entities.Booking>)ViewBag.Upcoming)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@b.Tool?.Name</strong>
+                                    <div class="text-muted small">@b.PickupDate.ToString("yyyy-MM-dd") → @b.ReturnDate.ToString("yyyy-MM-dd")</div>
+                                </div>
+                                <a asp-controller="Member" asp-action="Details" asp-route-id="@b.BookingId" class="btn btn-sm btn-outline-primary">Details</a>
+                            </li>
+                        }
+                        @if (((List<DAL.Models.Entities.Booking>)ViewBag.Upcoming).Count == 0)
+                        {
+                            <li class="list-group-item text-muted">No upcoming pickups.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h2 class="h6 mb-0">Notifications</h2>
+                        <a asp-action="Notifications" class="btn btn-sm btn-outline-primary">View all</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var n in (List<DAL.Models.Entities.Notification>)ViewBag.Notifications)
+                        {
+                            <li class="list-group-item @(n.IsRead ? "" : "fw-semibold")">
+                                <div class="small">@n.Title</div>
+                                <div class="text-muted small">@n.Message</div>
+                                <div class="text-muted" style="font-size:.7rem;">@n.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                            </li>
+                        }
+                        @if (((List<DAL.Models.Entities.Notification>)ViewBag.Notifications).Count == 0)
+                        {
+                            <li class="list-group-item text-muted">No notifications yet.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

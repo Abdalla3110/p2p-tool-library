@@ -1,0 +1,50 @@
+@{ ViewData["Title"] = "Maintenance Records"; var records = (List<DAL.Models.Entities.MaintenanceRecord>)ViewBag.Records; }
+
+<div class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 fw-bold mb-0"><i class="fas fa-clipboard-list text-primary me-2"></i>Maintenance Records</h1>
+            <a asp-action="RecordForm" class="btn btn-primary"><i class="fas fa-plus"></i> New record</a>
+        </div>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="All" selected="@(ViewBag.Status == "All" || ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in new[] { "Scheduled", "InProgress", "Completed", "NeedsAttention", "Failed", "RetestNeeded" }) { <option value="@s" selected="@(ViewBag.Status == s)">@s.Replace("NeedsAttention", "Needs attention").Replace("RetestNeeded", "Retest needed")</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        @if (records.Count == 0)
+        {
+            <div class="alert alert-info">No maintenance records.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Type</th><th>Technician</th><th>Scheduled</th><th>Completed</th><th>Hours</th><th>Status</th></tr></thead>
+                        <tbody>
+                            @foreach (var m in records)
+                            {
+                                <tr>
+                                    <td>@m.MaintenanceId</td>
+                                    <td>@m.Tool?.Name</td>
+                                    <td>@m.Type</td>
+                                    <td>@m.TechnicianUser?.FullName</td>
+                                    <td>@m.ScheduledAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@m.CompletedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@(m.DurationHours?.ToString("0.0") ?? "—")</td>
+                                    <td><span class="badge @(m.Status == MaintenanceStatusEnum.Completed ? "text-bg-success" : m.Status == MaintenanceStatusEnum.InProgress ? "text-bg-primary" : (m.Status == MaintenanceStatusEnum.Failed || m.Status == MaintenanceStatusEnum.NeedsAttention) ? "text-bg-danger" : m.Status == MaintenanceStatusEnum.RetestNeeded ? "text-bg-warning text-dark" : "text-bg-secondary")">@m.Status.ToString().Replace("NeedsAttention", "Needs attention").Replace("RetestNeeded", "Retest needed")</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,58 @@
+@model DAL.Models.ViewModels.ExternalRepairFormViewModel
+@{ ViewData["Title"] = "New External Repair"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 720px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-truck text-primary me-2"></i>@ViewData["Title"]</h1>
+
+        <form method="post" asp-action="RepairSave" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ToolId" class="form-label">Tool</label>
+                            <select asp-for="ToolId" asp-items="ViewBag.Tools" class="form-select"></select>
+                            <span asp-validation-for="ToolId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="RepairCenterName" class="form-label">Repair center</label>
+                            <input asp-for="RepairCenterName" class="form-control" />
+                            <span asp-validation-for="RepairCenterName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label">Status</label>
+                            <select asp-for="Status" class="form-select">
+                                <option>Inspecting</option><option>WaitingParts</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="SentAt" class="form-label">Sent at</label>
+                            <input asp-for="SentAt" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ExpectedReturnAt" class="form-label">Expected return</label>
+                            <input asp-for="ExpectedReturnAt" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Cost" class="form-label">Cost (EGP)</label>
+                            <input asp-for="Cost" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ProblemDescription" class="form-label">Problem description</label>
+                            <textarea asp-for="ProblemDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Invoice (image/PDF, max 10MB)</label>
+                            <input type="file" name="invoice" class="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save repair</button>
+                <a asp-action="Repairs" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

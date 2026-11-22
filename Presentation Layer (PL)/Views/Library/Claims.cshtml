@@ -1,0 +1,69 @@
+@{ ViewData["Title"] = "Insurance Claims"; var claims = (List<DAL.Models.Entities.InsuranceClaim>)ViewBag.Claims; var statuses = (string[])ViewBag.Statuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-file-invoice text-primary me-2"></i>Insurance Claims</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="All" selected="@(ViewBag.Status == "All" || ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in statuses) { <option value="@s" selected="@(ViewBag.Status == s)">@s.Replace("InReview", "In review")</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        @if (claims.Count == 0)
+        {
+            <div class="alert alert-info">No claims found.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Claimant</th><th>Tool value</th><th>Incident</th><th>Status</th><th>Decision</th></tr></thead>
+                        <tbody>
+                            @foreach (var c in claims)
+                            {
+                                <tr>
+                                    <td>@c.ClaimId</td>
+                                    <td>@c.Tool?.Name</td>
+                                    <td>@c.ClaimantUser?.FullName</td>
+                                    <td>@(c.ToolValue?.ToString("0") ?? "—") EGP</td>
+                                    <td>@c.IncidentDate?.ToString("yyyy-MM-dd")</td>
+                                    <td><span class="badge @(c.Status == InsuranceClaimStatusEnum.Approved ? "text-bg-success" : c.Status == InsuranceClaimStatusEnum.Rejected ? "text-bg-danger" : "text-bg-warning text-dark")">@c.Status.ToString().Replace("InReview", "In review")</span></td>
+                                    <td>
+                                        @if (c.Status is InsuranceClaimStatusEnum.Open or InsuranceClaimStatusEnum.InReview)
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#claimModal@c.ClaimId">Review</button>
+                                            <div class="modal fade" id="claimModal@c.ClaimId" tabindex="-1">
+                                                <div class="modal-dialog"><div class="modal-content">
+                                                    <form asp-action="ReviewClaim" asp-route-id="@c.ClaimId" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <div class="modal-header"><h5 class="modal-title">Claim #@c.ClaimId</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                                        <div class="modal-body">
+                                                            <p class="text-muted small">@c.Description</p>
+                                                            <div class="mb-2"><label class="form-label">Payout (EGP)</label><input type="number" name="payout" step="0.01" min="0" class="form-control" /></div>
+                                                            <div class="mb-2"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button name="approve" value="false" class="btn btn-outline-danger">Reject</button>
+                                                            <button name="approve" value="true" class="btn btn-success">Approve &amp; pay</button>
+                                                        </div>
+                                                    </form>
+                                                </div></div>
+                                            </div>
+                                        }
+                                        else { <span class="text-muted small">@c.DecisionNotes</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

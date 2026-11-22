@@ -1,0 +1,74 @@
+@model List<DAL.Models.Entities.Message>
+@{ var conv = (DAL.Models.Entities.Conversation)ViewBag.Conversation; var other = (DAL.Models.Entities.User)ViewBag.Other; var uid = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value); ViewData["Title"] = other.FullName; }
+
+<div class="py-4">
+    <div class="container" style="max-width: 800px;">
+        <a asp-action="Index" class="btn btn-link px-0 text-decoration-none mb-3"><i class="fas fa-arrow-left"></i> All messages</a>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@other.FullName</strong>
+                    <div class="text-muted small">@(conv.Subject ?? "Conversation")</div>
+                </div>
+                @if (conv.ToolId.HasValue)
+                {
+                    <a asp-controller="Home" asp-action="Details" asp-route-id="@conv.ToolId" class="btn btn-sm btn-outline-primary">View tool</a>
+                }
+            </div>
+            <div class="card-body" style="background:#f8f9fa; max-height:55vh; overflow-y:auto;">
+                @foreach (var m in Model)
+                {
+                    var mine = m.SenderUserId == uid;
+                    <div class="d-flex mb-2 @(mine ? "justify-content-end" : "")">
+                        <div class="p-2 rounded-3 @(mine ? "bg-primary text-white" : "bg-white border")" style="max-width:75%;">
+                            <div>@m.Body</div>
+                            <div class="@(mine ? "text-white-50" : "text-muted")" style="font-size:.7rem;">@m.SentAt.ToString("MM-dd HH:mm")</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.Count == 0)
+                {
+                    <p class="text-muted text-center">No messages yet — say hello!</p>
+                }
+            </div>
+            <div class="card-footer bg-white">
+                <form asp-action="Send" asp-route-id="@conv.ConversationId" method="post" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="text" name="body" class="form-control" placeholder="Type a message…" required autocomplete="off" />
+                    <button class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script>
+(function () {
+    var convId = "@conv.ConversationId";
+    var uid = @uid;
+    var box = document.querySelector('.card-body[style*="overflow-y"]');
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl('/hubs/chat')
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on('ReceiveMessage', function (msg) {
+        var wrap = document.createElement('div');
+        wrap.className = 'd-flex mb-2 ' + (msg.senderId === uid ? 'justify-content-end' : '');
+        wrap.innerHTML = '<div class="p-2 rounded-3 ' + (msg.senderId === uid ? 'bg-primary text-white' : 'bg-white border') +
+            '" style="max-width:75%;"><div></div><div class="' + (msg.senderId === uid ? 'text-white-50' : 'text-muted') +
+            '" style="font-size:.7rem;">' + msg.sentAt + '</div></div>';
+        wrap.querySelector('div > div').textContent = msg.body;
+        box.appendChild(wrap);
+        box.scrollTop = box.scrollHeight;
+    });
+
+    connection.start().then(function () {
+        return connection.invoke('JoinConversation', convId);
+    }).catch(function (err) { console.error(err); });
+})();
+</script>
+}

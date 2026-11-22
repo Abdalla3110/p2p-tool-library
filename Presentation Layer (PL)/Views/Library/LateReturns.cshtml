@@ -1,0 +1,51 @@
+@{ ViewData["Title"] = "Late Returns"; var items = (List<DAL.Models.Entities.LateReturn>)ViewBag.LateReturns; var statuses = (string[])ViewBag.Statuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-clock text-primary me-2"></i>Late Returns</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="All" selected="@(ViewBag.Status == "All" || ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in statuses) { <option value="@s" selected="@(ViewBag.Status == s)">@s.Replace("FineApplied", "Fine applied").Replace("AccountFrozen", "Account frozen")</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (items.Count == 0)
+        {
+            <div class="alert alert-info">No late returns.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Borrower</th><th>Due</th><th>Actual</th><th>Delay</th><th>Penalty</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var l in items)
+                            {
+                                <tr>
+                                    <td>@l.LateReturnId</td>
+                                    <td>@l.Tool?.Name</td>
+                                    <td>@l.BorrowerUser?.FullName</td>
+                                    <td>@l.DueDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@(l.ActualReturnDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td>@l.DelayDays day(s)</td>
+                                    <td>@l.PenaltyAmount.ToString("0") EGP</td>
+                                    <td><span class="badge @(l.Status == LateReturnStatusEnum.Resolved ? "text-bg-success" : "text-bg-danger")">@l.Status.ToString().Replace("FineApplied", "Fine applied").Replace("AccountFrozen", "Account frozen")</span></td>
+                                    <td>
+                                        @if (l.Status != LateReturnStatusEnum.Resolved)
+                                        {
+                                            <form asp-action="ResolveLateReturn" asp-route-id="@l.LateReturnId" method="post" class="d-inline">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-success">Resolve</button></form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

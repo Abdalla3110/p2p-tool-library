@@ -1,0 +1,53 @@
+@model DAL.Models.Entities.PlatformSetting
+@{ ViewData["Title"] = "Platform Settings"; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-cog text-primary me-2"></i>Platform Settings</h1>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        <form method="post" asp-action="Settings">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="SettingsId" />
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Fees &amp; defaults</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4"><label asp-for="PlatformCommissionPercentage" class="form-label">Commission %</label><input asp-for="PlatformCommissionPercentage" type="number" step="0.1" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="InsurancePercentage" class="form-label">Insurance %</label><input asp-for="InsurancePercentage" type="number" step="0.1" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="DefaultDepositPercentage" class="form-label">Default deposit %</label><input asp-for="DefaultDepositPercentage" type="number" step="0.1" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="DefaultMaxBorrowDays" class="form-label">Max borrow days</label><input asp-for="DefaultMaxBorrowDays" type="number" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="DefaultCleaningBufferHours" class="form-label">Cleaning buffer (hrs)</label><input asp-for="DefaultCleaningBufferHours" type="number" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="LateReturnGraceHours" class="form-label">Late grace (hrs)</label><input asp-for="LateReturnGraceHours" type="number" class="form-control" /></div>
+                        <div class="col-md-4"><label asp-for="LateReturnPenaltyPerDay" class="form-label">Late penalty / day</label><input asp-for="LateReturnPenaltyPerDay" type="number" step="0.01" class="form-control" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><h2 class="h6 mb-0">Features</h2></div>
+                <div class="card-body">
+                    <div class="form-check mb-2"><input asp-for="BookingAutoApproveEnabled" class="form-check-input" /><label asp-for="BookingAutoApproveEnabled" class="form-check-label">Auto-approve bookings</label></div>
+                    <div class="form-check mb-2"><input asp-for="EmailBookingConfirmationsEnabled" class="form-check-input" /><label asp-for="EmailBookingConfirmationsEnabled" class="form-check-label">Email booking confirmations</label></div>
+                    <div class="form-check mb-2"><input asp-for="SmsLateReturnAlertsEnabled" class="form-check-input" /><label asp-for="SmsLateReturnAlertsEnabled" class="form-check-label">SMS late-return alerts</label></div>
+                    <div class="form-check mb-2"><input asp-for="PushNotificationsEnabled" class="form-check-input" /><label asp-for="PushNotificationsEnabled" class="form-check-label">Push notifications</label></div>
+                    <div class="form-check"><input asp-for="WeeklyMaintenanceRemindersEnabled" class="form-check-input" /><label asp-for="WeeklyMaintenanceRemindersEnabled" class="form-check-label">Weekly maintenance reminders</label></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4 border-danger">
+                <div class="card-header bg-white"><h2 class="h6 mb-0 text-danger">Danger zone</h2></div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input asp-for="PlatformPaused" class="form-check-input" />
+                        <label asp-for="PlatformPaused" class="form-check-label fw-bold">Pause platform (blocks new bookings)</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save settings</button>
+        </form>
+    </div>
+</div>

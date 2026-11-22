@@ -1,0 +1,59 @@
+@{ ViewData["Title"] = "Inventory Audits"; var audits = (List<DAL.Models.Entities.InventoryAudit>)ViewBag.Audits; var statuses = (string[])ViewBag.Statuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-clipboard-check text-primary me-2"></i>Inventory Audits</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="All" selected="@(ViewBag.Status == "All" || ViewBag.Status == null)">All statuses</option>
+                @foreach (var s in statuses) { <option value="@s" selected="@(ViewBag.Status == s)">@s.Replace("PhotoSubmitted", "Photo submitted")</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (audits.Count == 0)
+        {
+            <div class="alert alert-info">No audits found.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Owner</th><th>Zone</th><th>Due</th><th>Status</th><th>Photos</th><th>Review</th></tr></thead>
+                        <tbody>
+                            @foreach (var a in audits)
+                            {
+                                <tr>
+                                    <td>@a.AuditId</td>
+                                    <td>@a.Tool?.Name</td>
+                                    <td>@a.OwnerUser?.FullName</td>
+                                    <td>@a.ZoneId</td>
+                                    <td>@a.DueDate.ToString("yyyy-MM-dd")</td>
+                                    <td><span class="badge @(a.Status == AuditStatusEnum.Approved ? "text-bg-success" : a.Status == AuditStatusEnum.Rejected || a.Status == AuditStatusEnum.Failed ? "text-bg-danger" : "text-bg-warning text-dark")">@a.Status.ToString().Replace("PhotoSubmitted", "Photo submitted")</span></td>
+                                    <td class="small">
+                                        @if (a.ToolPhotoUrl != null) { <div><i class="fas fa-image"></i> tool</div> }
+                                        @if (a.DatePaperPhotoUrl != null) { <div><i class="fas fa-image"></i> date</div> }
+                                        @if (a.ToolPhotoUrl == null && a.DatePaperPhotoUrl == null) { <span class="text-muted">—</span> }
+                                    </td>
+                                    <td>
+                                        @if (a.Status is AuditStatusEnum.Pending or AuditStatusEnum.PhotoSubmitted)
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <form asp-action="ReviewAudit" asp-route-id="@a.AuditId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="decision" value="Approve" /><button class="btn btn-outline-success">Approve</button></form>
+                                                <form asp-action="ReviewAudit" asp-route-id="@a.AuditId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="decision" value="RejectRetake" /><button class="btn btn-outline-warning">Retake</button></form>
+                                                <form asp-action="ReviewAudit" asp-route-id="@a.AuditId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="decision" value="Escalate" /><button class="btn btn-outline-danger">Escalate</button></form>
+                                            </div>
+                                        }
+                                        else { <span class="text-muted small">@a.ReviewDecision</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

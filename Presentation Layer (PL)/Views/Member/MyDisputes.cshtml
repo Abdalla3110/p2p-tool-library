@@ -1,0 +1,39 @@
+@model List<DAL.Models.Entities.Dispute>
+@{ ViewData["Title"] = "My Disputes"; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-gavel text-primary me-2"></i>My Disputes</h1>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+        @if (Model.Count == 0)
+        {
+            <div class="alert alert-info">No disputes. If something goes wrong with a booking, open a dispute from the booking page.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Type</th><th>Deposit at risk</th><th>Status</th><th>Opened</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var d in Model)
+                            {
+                                <tr>
+                                    <td>@d.DisputeId</td>
+                                    <td>@d.Tool?.Name</td>
+                                    <td><span class="badge text-bg-light border">@d.Type</span></td>
+                                    <td>@(d.DepositAtRisk?.ToString("0") ?? "—") EGP</td>
+                                    <td><span class="badge @(d.Status == DisputeStatusEnum.Resolved ? "text-bg-success" : d.Status == DisputeStatusEnum.Rejected ? "text-bg-danger" : d.Status == DisputeStatusEnum.InReview ? "text-bg-warning text-dark" : "text-bg-danger")">@d.Status</span></td>
+                                    <td>@d.OpenedAt.ToString("yyyy-MM-dd")</td>
+                                    <td><a asp-controller="Library" asp-action="DisputeDetails" asp-route-id="@d.DisputeId" class="btn btn-sm btn-outline-primary">Details</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

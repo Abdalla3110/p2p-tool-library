@@ -1,0 +1,31 @@
+@{ ViewData["Title"] = "Roles"; var roles = (List<DAL.Models.Entities.Role>)ViewBag.Roles; var counts = (Dictionary<int,int>)ViewBag.Counts; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-user-tag text-primary me-2"></i>Roles</h1>
+        <div class="row g-4">
+            @foreach (var r in roles)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h2 class="h5">@r.Name</h2>
+                            <div class="display-6 fw-bold text-primary">@counts.GetValueOrDefault(r.RoleId)</div>
+                            <div class="text-muted small">users</div>
+                            <div class="text-muted small mt-2">
+                                @(r.Name switch
+                                {
+                                    "Member" => "Borrow and lend tools",
+                                    "Librarian" => "Mediate disputes, verify handovers, approve tools & KYC",
+                                    "Technician" => "Maintenance, repairs, disposals",
+                                    "Admin" => "Full platform control",
+                                    _ => "",
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

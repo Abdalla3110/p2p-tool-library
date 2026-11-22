@@ -1,0 +1,12 @@
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+
+# Uploaded files (keep folder, ignore contents if needed later)
+# wwwroot/uploads/
+
+# Logs
+*.log
+logs/

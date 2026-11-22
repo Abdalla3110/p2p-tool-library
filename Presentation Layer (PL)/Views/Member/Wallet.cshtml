@@ -1,0 +1,63 @@
+@{ var user = (DAL.Models.Entities.User)ViewBag.User; ViewData["Title"] = "Wallet"; }
+@model List<DAL.Models.Entities.Transaction>
+
+<div class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body py-4">
+                        <i class="fas fa-wallet fa-2x text-primary mb-2"></i>
+                        <div class="text-muted small">Balance</div>
+                        <div class="display-5 fw-bold text-success">@user.WalletBalance.ToString("0.00") EGP</div>
+                        <div class="text-muted small mt-2">Referral code: <strong>@user.ReferralCode</strong></div>
+                    </div>
+                </div>
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <h2 class="h6">Top up wallet</h2>
+                        <form asp-action="TopUp" method="post" class="d-flex gap-2">
+                            @Html.AntiForgeryToken()
+                            <input type="number" name="amount" class="form-control" min="10" max="50000" step="0.01" placeholder="Amount (EGP)" required />
+                            <button class="btn btn-success text-nowrap"><i class="fas fa-plus"></i> Top up</button>
+                        </form>
+                        <div class="text-muted" style="font-size:.75rem;">Simulated payment — replace with a real gateway for production.</div>
+                    </div>
+                </div>
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <h2 class="h6">Quick actions</h2>
+                        <a asp-action="Bookings" class="btn btn-outline-primary btn-sm w-100 mb-2">My bookings</a>
+                        <a asp-action="Tools" class="btn btn-outline-primary btn-sm w-100">My tools</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white"><h2 class="h5 mb-0">Transaction History</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody>
+                                @foreach (var t in Model)
+                                {
+                                    <tr>
+                                        <td>@t.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>@(t.Description ?? t.Reference ?? "—")</td>
+                                        <td><span class="badge text-bg-light border">@t.Type</span></td>
+                                        <td class="@(t.Amount >= 0 ? "text-success" : "text-danger") fw-semibold">@(t.Amount >= 0 ? "+" : "")@t.Amount.ToString("0.00") EGP</td>
+                                        <td><span class="badge @(t.Status == TransactionStatusEnum.Completed ? "text-bg-success" : "text-bg-warning text-dark")">@t.Status</span></td>
+                                    </tr>
+                                }
+                                @if (Model.Count == 0)
+                                {
+                                    <tr><td colspan="5" class="text-muted text-center py-4">No transactions yet.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

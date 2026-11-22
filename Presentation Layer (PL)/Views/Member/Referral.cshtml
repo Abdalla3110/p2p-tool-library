@@ -1,0 +1,49 @@
+@{ ViewData["Title"] = "Referrals"; var refs = (List<DAL.Models.Entities.Referral>)ViewBag.Referrals; var code = (string?)ViewBag.Code; }
+
+<div class="py-5">
+    <div class="container" style="max-width: 860px;">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-user-friends text-primary me-2"></i>Referrals</h1>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Your code</div><div class="h4 fw-bold text-primary">@code</div></div></div></div>
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Completed referrals</div><div class="display-6 fw-bold">@ViewBag.CompletedCount</div></div></div></div>
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted small">Total earned</div><div class="display-6 fw-bold text-success">@(((decimal)ViewBag.TotalEarned).ToString("0")) EGP</div></div></div></div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6">Share your link</h2>
+                <div class="input-group">
+                    <input type="text" class="form-control" readonly value="@Context.Request.Scheme://@Context.Request.Host/register?ref=@code" id="refLink" />
+                    <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)">Copy</button>
+                </div>
+                <p class="text-muted small mt-2 mb-0">You earn a bonus when a friend signs up with your code and completes their first rental.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><h2 class="h6 mb-0">Your referrals</h2></div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>User</th><th>Code used</th><th>Bonus</th><th>Status</th><th>Joined</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in refs)
+                        {
+                            <tr>
+                                <td>@r.ReferredUser?.FullName</td>
+                                <td class="text-uppercase">@r.ReferralCode</td>
+                                <td>@r.CreditAmount.ToString("0") EGP</td>
+                                <td><span class="badge @(r.Status == ReferralStatusEnum.Completed ? "text-bg-success" : r.Status == ReferralStatusEnum.Pending ? "text-bg-warning text-dark" : "text-bg-secondary")">@r.Status</span></td>
+                                <td>@r.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                        @if (refs.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-muted text-center py-4">No referrals yet — share your link!</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

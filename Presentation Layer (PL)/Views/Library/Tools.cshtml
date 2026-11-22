@@ -1,0 +1,58 @@
+@{ ViewData["Title"] = "Tool Approvals"; var tools = (List<DAL.Models.Entities.Tool>)ViewBag.Tools; var statuses = (string[])ViewBag.Statuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-tools text-primary me-2"></i>Tool Moderation</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="status" class="form-select">
+                <option value="" selected="@(ViewBag.Status == null)">Pending approval</option>
+                <option value="All" selected="@(ViewBag.Status == "All")">All statuses</option>
+                @foreach (var s in statuses.Where(x => x != "PendingApproval")) { <option value="@s" selected="@(ViewBag.Status == s)">@s</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (tools.Count == 0)
+        {
+            <div class="alert alert-info">No tools in this state.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Tool</th><th>Owner</th><th>Category</th><th>Zone</th><th>Price/day</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            @foreach (var t in tools)
+                            {
+                                <tr>
+                                    <td>@t.ToolId</td>
+                                    <td><strong>@t.Name</strong>@if (t.Brand != null) { <div class="text-muted small">@t.Brand</div> }</td>
+                                    <td>@t.OwnerUser?.FullName</td>
+                                    <td>@t.Category?.Name</td>
+                                    <td>@t.Zone?.Name</td>
+                                    <td>@t.PricePerDay.ToString("0") EGP</td>
+                                    <td><span class="badge @(t.Status == ToolStatusEnum.Available ? "text-bg-success" : t.Status == ToolStatusEnum.PendingApproval ? "text-bg-warning text-dark" : "text-bg-secondary")">@t.Status.ToString().Replace("PendingApproval", "Pending approval")</span></td>
+                                    <td>
+                                        @if (t.Status == ToolStatusEnum.PendingApproval)
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <form asp-action="ApproveTool" asp-route-id="@t.ToolId" method="post" class="d-inline">@Html.AntiForgeryToken()<button class="btn btn-outline-success">Approve</button></form>
+                                                <form asp-action="RejectTool" asp-route-id="@t.ToolId" method="post" class="d-inline">@Html.AntiForgeryToken()<button class="btn btn-outline-danger">Reject</button></form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Home" asp-action="Details" asp-route-id="@t.ToolId" class="btn btn-sm btn-outline-primary">View</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

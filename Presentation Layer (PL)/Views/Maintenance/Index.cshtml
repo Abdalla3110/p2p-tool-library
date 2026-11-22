@@ -1,0 +1,75 @@
+@{ ViewData["Title"] = "Maintenance Dashboard"; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-1"><i class="fas fa-screwdriver-wrench text-primary me-2"></i>Maintenance Dashboard</h1>
+        <p class="text-muted mb-4">Tool health, repairs, and upkeep operations.</p>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-warning">@ViewBag.ToolsInMaintenance</div><div class="text-muted small">In Maintenance</div></div></div></div>
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-danger">@ViewBag.UnfitTools</div><div class="text-muted small">Unfit</div></div></div></div>
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-primary">@ViewBag.OpenRecords</div><div class="text-muted small">Open Records</div></div></div></div>
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-success">@ViewBag.MyCompleted</div><div class="text-muted small">My Repairs</div></div></div></div>
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold text-info">@ViewBag.OpenRepairs</div><div class="text-muted small">External Repairs</div></div></div></div>
+            <div class="col-md-2"><div class="card shadow-sm"><div class="card-body text-center"><div class="display-6 fw-bold">@(((double)ViewBag.AvgHours).ToString("0.0"))h</div><div class="text-muted small">Avg repair time</div></div></div></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <h2 class="h6 mb-0">Needs attention</h2>
+                        <a asp-action="Tools" class="btn btn-sm btn-outline-primary">All tools</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var t in (List<DAL.Models.Entities.Tool>)ViewBag.NeedsAttention)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div><strong>@t.Name</strong> <span class="text-muted small">@t.Category?.Name</span>
+                                    <div class="text-muted small">@(t.BatteryHealthPercentage != null ? $"Battery {t.BatteryHealthPercentage}%" : "")</div></div>
+                                <span class="badge @(t.Status == ToolStatusEnum.Maintenance ? "text-bg-warning text-dark" : t.Status == ToolStatusEnum.Unfit ? "text-bg-danger" : "text-bg-info")">@t.Status</span>
+                            </li>
+                        }
+                        @if (((List<DAL.Models.Entities.Tool>)ViewBag.NeedsAttention).Count == 0)
+                        {
+                            <li class="list-group-item text-muted">All tools healthy.</li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <h2 class="h6 mb-0">My recent records</h2>
+                        <a asp-action="Records" class="btn btn-sm btn-outline-primary">All records</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var m in (List<DAL.Models.Entities.MaintenanceRecord>)ViewBag.MyRecords)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <div><strong>@m.Type</strong> — @m.Tool?.Name<div class="text-muted small">@m.CreatedAt.ToString("yyyy-MM-dd") • @m.Status</div></div>
+                                <span class="text-muted">@(m.DurationHours?.ToString("0.0") ?? "—") h</span>
+                            </li>
+                        }
+                        @if (((List<DAL.Models.Entities.MaintenanceRecord>)ViewBag.MyRecords).Count == 0)
+                        {
+                            <li class="list-group-item text-muted">No records yet.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white"><h2 class="h6 mb-0">Quick actions</h2></div>
+                    <div class="list-group list-group-flush">
+                        <a asp-action="RecordForm" class="list-group-item list-group-item-action"><i class="fas fa-plus-circle text-success me-2"></i>New maintenance record</a>
+                        <a asp-action="Tools" class="list-group-item list-group-item-action"><i class="fas fa-toolbox text-primary me-2"></i>Tool health board</a>
+                        <a asp-action="Repairs" class="list-group-item list-group-item-action"><i class="fas fa-truck text-warning me-2"></i>External repairs</a>
+                        <a asp-action="Disposals" class="list-group-item list-group-item-action"><i class="fas fa-trash text-danger me-2"></i>Disposals</a>
+                        <a asp-action="Profile" class="list-group-item list-group-item-action"><i class="fas fa-id-badge text-info me-2"></i>My profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

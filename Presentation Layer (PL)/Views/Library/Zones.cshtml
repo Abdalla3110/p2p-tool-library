@@ -1,0 +1,24 @@
+@{ ViewData["Title"] = "Zones"; var zones = (List<DAL.Models.Entities.Zone>)ViewBag.Zones; var members = (Dictionary<int,int>)ViewBag.MemberCounts; var tools = (Dictionary<int,int>)ViewBag.ToolCounts; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-map-marked-alt text-primary me-2"></i>Chapters / Zones</h1>
+        <div class="row g-4">
+            @foreach (var z in zones)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h2 class="h5">@z.Name</h2>
+                            <div class="text-muted small mb-3">Librarian: @(z.LibrarianUser?.FullName ?? "Unassigned")</div>
+                            <div class="d-flex gap-3">
+                                <div><span class="fw-bold">@members.GetValueOrDefault(z.ZoneId)</span> <span class="text-muted small">members</span></div>
+                                <div><span class="fw-bold">@tools.GetValueOrDefault(z.ZoneId)</span> <span class="text-muted small">tools</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

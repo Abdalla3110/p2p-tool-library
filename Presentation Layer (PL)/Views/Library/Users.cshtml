@@ -1,0 +1,56 @@
+@{ ViewData["Title"] = "Users & KYC"; var users = (List<DAL.Models.Entities.User>)ViewBag.Users; var statuses = (string[])ViewBag.KycStatuses; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-4"><i class="fas fa-users text-primary me-2"></i>Users &amp; KYC</h1>
+
+        <form method="get" class="d-flex gap-2 mb-3" style="max-width:320px;">
+            <select name="kyc" class="form-select">
+                <option value="" selected="@(ViewBag.Kyc == null)">Pending KYC</option>
+                <option value="All" selected="@(ViewBag.Kyc == "All")">All users</option>
+                @foreach (var s in statuses) { <option value="@s" selected="@(ViewBag.Kyc == s)">@s</option> }
+            </select>
+            <button class="btn btn-outline-primary">Filter</button>
+        </form>
+
+        @if (users.Count == 0)
+        {
+            <div class="alert alert-info">No users found.</div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Zone</th><th>Tier</th><th>Trust</th><th>KYC</th><th>Active</th><th>Review</th></tr></thead>
+                        <tbody>
+                            @foreach (var u in users)
+                            {
+                                <tr>
+                                    <td><strong>@u.FullName</strong></td>
+                                    <td>@u.Email</td>
+                                    <td><span class="badge text-bg-light border">@u.Role?.Name</span></td>
+                                    <td>@u.Zone?.Name</td>
+                                    <td>@u.Tier</td>
+                                    <td>@u.TrustScore</td>
+                                    <td><span class="badge @(u.KycStatus == KycStatusEnum.Verified ? "text-bg-success" : u.KycStatus == KycStatusEnum.Pending ? "text-bg-warning text-dark" : "text-bg-danger")">@u.KycStatus</span></td>
+                                    <td>@(u.IsActive ? "Yes" : "No")</td>
+                                    <td>
+                                        @if (u.KycStatus == KycStatusEnum.Pending)
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <form asp-action="ReviewKyc" asp-route-id="@u.UserId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="approve" value="true" /><button class="btn btn-outline-success">Verify</button></form>
+                                                <form asp-action="ReviewKyc" asp-route-id="@u.UserId" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="approve" value="false" /><button class="btn btn-outline-danger">Reject</button></form>
+                                            </div>
+                                        }
+                                        else { <a asp-controller="Home" asp-action="PublicProfile" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-primary">Profile</a> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

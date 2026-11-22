@@ -1,0 +1,73 @@
+@{ ViewData["Title"] = "Handovers"; var handovers = (List<DAL.Models.Entities.Handover>)ViewBag.Handovers; }
+
+<div class="py-5">
+    <div class="container">
+        <h1 class="h3 fw-bold mb-1"><i class="fas fa-qrcode text-primary me-2"></i>Handovers</h1>
+        <p class="text-muted mb-4">Verify QR codes at pickup/return and complete the checklist.</p>
+
+        @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+        @if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+
+        @if (handovers.Count == 0)
+        {
+            <div class="alert alert-info">No handovers scheduled.</div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var h in handovers)
+                {
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h2 class="h6 mb-0">#@h.HandoverId — @h.Type • @h.Tool?.Name</h2>
+                                    <span class="badge @(h.Status == HandoverStatusEnum.Verified ? "text-bg-success" : h.Status == HandoverStatusEnum.FailedScan ? "text-bg-danger" : "text-bg-warning text-dark")">@h.Status.ToString().Replace("PendingQR", "Pending QR")</span>
+                                </div>
+                                <div class="text-muted small mb-3">
+                                    Booking #@h.BookingId • @h.ScheduledAt.ToString("yyyy-MM-dd HH:mm") • @h.Location<br>
+                                    Borrower: @h.BorrowerUser?.FullName • Lender: @h.LenderUser?.FullName<br>
+                                    QR: <code>@h.QrCode</code>
+                                </div>
+                                @if (h.Status != HandoverStatusEnum.Verified)
+                                {
+                                    <form asp-action="VerifyHandover" asp-route-id="@h.HandoverId" method="post" enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+                                        <div class="mb-2">
+                                            <input type="text" name="qrCode" class="form-control form-control-sm" placeholder="Scan / enter QR code" required />
+                                        </div>
+                                        <div class="mb-1">
+                                            <input type="file" name="@(h.Type == HandoverTypeEnum.Pickup ? "pickupPhoto" : "returnPhoto")" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp" required />
+                                            <div class="form-text">@(h.Type == HandoverTypeEnum.Pickup ? HandoverTypeEnum.Pickup : HandoverTypeEnum.Return) photo is required</div>
+                                        </div>
+                                        <div class="form-check small">
+                                            <input class="form-check-input" type="checkbox" name="matchesListing" id="ml@h.HandoverId" required />
+                                            <label class="form-check-label" for="ml@h.HandoverId">Matches listing</label>
+                                        </div>
+                                        <div class="form-check small">
+                                            <input class="form-check-input" type="checkbox" name="accessories" id="ac@h.HandoverId" required />
+                                            <label class="form-check-label" for="ac@h.HandoverId">Accessories included</label>
+                                        </div>
+                                        <div class="form-check small">
+                                            <input class="form-check-input" type="checkbox" name="noDamage" id="nd@h.HandoverId" required />
+                                            <label class="form-check-label" for="nd@h.HandoverId">No visible damage</label>
+                                        </div>
+                                        <div class="form-check small mb-2">
+                                            <input class="form-check-input" type="checkbox" name="bothPresent" id="bp@h.HandoverId" required />
+                                            <label class="form-check-label" for="bp@h.HandoverId">Both parties present</label>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-check"></i> Verify</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="text-success small"><i class="fas fa-check-circle"></i> Verified @h.VerifiedAt?.ToString("yyyy-MM-dd HH:mm")</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

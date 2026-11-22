@@ -1,0 +1,79 @@
+﻿@{ ViewData["Title"] = "Home"; }
+
+<div class="py-5">
+    <div class="container">
+        <div class="p-5 mb-4 rounded-4 text-white" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <h1 class="display-5 fw-bold">Welcome to P2P Tool Library</h1>
+                    <p class="lead mb-4">Borrow tools from your neighbors or earn money by lending yours.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-controller="Home" asp-action="Tools" class="btn btn-light btn-lg"><i class="fas fa-search"></i> Browse Tools</a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Member" asp-action="Index" class="btn btn-outline-light btn-lg"><i class="fas fa-gauge-high"></i> My Dashboard</a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Home" asp-action="Register" class="btn btn-outline-light btn-lg"><i class="fas fa-user-plus"></i> Join Now</a>
+                        }
+                    </div>
+                </div>
+                <div class="col-lg-5 text-center">
+                    <i class="fas fa-tools" style="font-size: 8rem; opacity: 0.15;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4 text-center">
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="display-6 fw-bold text-primary">@ViewBag.TotalTools</div><div class="text-muted">Tools listed</div></div></div></div>
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="display-6 fw-bold text-primary">@ViewBag.TotalUsers</div><div class="text-muted">Community members</div></div></div></div>
+            <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="display-6 fw-bold text-primary">@ViewBag.TotalBookings</div><div class="text-muted">Completed rentals</div></div></div></div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 fw-bold mb-0">Featured Tools</h2>
+            <a asp-controller="Home" asp-action="Tools" class="btn btn-sm btn-outline-primary">View all</a>
+        </div>
+        <div class="row g-4">
+            @foreach (var tool in (List<DAL.Models.ViewModels.ToolCardViewModel>)ViewBag.FeaturedTools)
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card h-100 tool-card shadow-sm">
+                        <div class="bg-light text-center py-4 rounded-top">
+                            <i class="@tool.CategoryIcon fa-3x text-primary"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <h3 class="h5 mb-0">@tool.Name</h3>
+                                @if (tool.Status == "Available")
+                                {
+                                    <span class="badge text-bg-success">Available</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-info">@tool.Status</span>
+                                }
+                            </div>
+                            <div class="text-muted small mb-2"><i class="fas fa-map-marker-alt text-primary me-1"></i> @tool.ZoneName</div>
+                            <div class="mb-2"><span class="text-warning">@Html.Raw(Stars(tool.RatingAverage))</span> <span class="text-muted small">(@tool.RatingAverage.ToString("0.0"))</span></div>
+                            <div class="fw-bold text-primary fs-5">@tool.PricePerDay.ToString("0") EGP/day</div>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <a asp-controller="Home" asp-action="Details" asp-route-id="@tool.ToolId" class="btn btn-primary w-100"><i class="fas fa-calendar-check"></i> View &amp; Book</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string Stars(decimal rating)
+    {
+        var full = (int)Math.Round(rating);
+        return string.Concat(Enumerable.Repeat("★", Math.Clamp(full, 0, 5))) +
+               string.Concat(Enumerable.Repeat("☆", 5 - Math.Clamp(full, 0, 5)));
+    }
+}
