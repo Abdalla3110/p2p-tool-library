@@ -10,3 +10,6 @@ obj/
 # Logs
 *.log
 logs/
+
+# User-uploaded files
+wwwroot/uploads/
